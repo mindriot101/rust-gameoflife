@@ -1,15 +1,37 @@
-enum CellState {
+#[derive(Debug, Clone, Copy)]
+pub enum CellState {
     Alive,
     Dead,
 }
 
-struct Board {
+#[derive(Default, Debug)]
+pub struct Board {
     cells: Vec<CellState>,
+    width: usize,
+    height: usize,
+}
+
+impl Board {
+    pub fn set(&mut self, x: usize, y: usize, state: CellState) {
+        let i = self.index(x, y);
+        self.cells[i] = state;
+    }
+
+    pub fn get(&self, x: usize, y: usize) -> CellState {
+        let i = self.index(x, y);
+        self.cells[i]
+    }
+
+    fn index(&self, x: usize, y: usize) -> usize {
+        y * self.width + x
+    }
 }
 
 fn update(board: Board) -> Board {
     Board {
         cells: Vec::new(),
+        width: board.width,
+        height: board.height,
     }
 }
 
@@ -24,10 +46,8 @@ fn main() {
 }
 
 fn read_initial_board() -> Board {
-    Board {
-        cells: Vec::new()
-    }
+    Board::default()
 }
 
-fn render(board: &Board) {
+fn render(_board: &Board) {
 }
