@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CellState {
     Alive,
     Dead,
@@ -29,7 +29,7 @@ impl Board {
 
 fn update(board: Board) -> Board {
     Board {
-        cells: Vec::new(),
+        cells: board.cells.clone(),
         width: board.width,
         height: board.height,
     }
@@ -59,4 +59,34 @@ fn read_initial_board() -> Board {
 }
 
 fn render(_board: &Board) {
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_stable() {
+        use CellState::*;
+        let mut board = Board {
+            width: 4,
+            height: 4,
+            cells: vec![
+                Dead, Dead, Dead, Dead,
+                Dead, Alive, Alive, Dead,
+                Dead, Alive, Alive, Dead,
+                Dead, Dead, Dead, Dead,
+            ],
+        };
+        for _ in 0..100 {
+            board = update(board);
+        }
+
+        assert_eq!(board.cells, vec![
+                Dead, Dead, Dead, Dead,
+                Dead, Alive, Alive, Dead,
+                Dead, Alive, Alive, Dead,
+                Dead, Dead, Dead, Dead,
+            ]);
+    }
 }
