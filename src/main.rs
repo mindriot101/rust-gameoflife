@@ -46,7 +46,16 @@ fn main() {
 }
 
 fn read_initial_board() -> Board {
-    Board::default()
+    let width = 100;
+    let height = 100;
+    let board = Board {
+        cells: vec![CellState::Dead; width * height],
+        width: width,
+        height: height,
+    };
+
+    /* Update the board here */
+    board
 }
 
 fn render(_board: &Board) {
