@@ -1,7 +1,7 @@
 extern crate rand;
 
-use std::io::Write;
-use std::io::stdout;
+use std::io::{BufWriter, Write};
+use std::fs::File;
 
 use rand::Rng;
 
@@ -145,10 +145,16 @@ fn update(board: Board) -> Board {
 fn main() {
     let mut board = read_initial_board();
     let iterations = 100;
+    let file = File::create("gol.txt").unwrap();
+    let mut writer = BufWriter::new(file);
+
+    // Write header
+    write!(&mut writer, "{} {}\n---\n", board.width, board.height);
+
+
     for _ in 0..iterations {
 
-        render(&board, &mut stdout());
-        write!(&mut stdout(), "\n").unwrap();
+        render(&board, &mut writer);
 
         board = update(board);
     }
@@ -173,6 +179,7 @@ fn read_initial_board() -> Board {
     board
 }
 
+/*
 fn render<T: Write>(board: &Board, writer: &mut T) {
     for row in 0..board.height {
         for col in 0..board.width {
@@ -183,6 +190,18 @@ fn render<T: Write>(board: &Board, writer: &mut T) {
         }
         write!(writer, "\n").unwrap();
     }
+}
+*/
+fn render<T: Write>(board: &Board, writer: &mut T) {
+    for row in 0..board.height {
+        for col in 0..board.width {
+            let value = board.get(col, row);
+            if value == CellState::Alive {
+                write!(writer, "{} {}\n", col, row).unwrap();
+            }
+        }
+    }
+    write!(writer, "---\n").unwrap();
 }
 
 #[cfg(test)]
