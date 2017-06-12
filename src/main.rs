@@ -144,7 +144,7 @@ fn update(board: Board) -> Board {
 
 fn main() {
     let mut board = read_initial_board();
-    let iterations = 10;
+    let iterations = 100;
     for _ in 0..iterations {
 
         render(&board, &mut stdout());
@@ -155,8 +155,8 @@ fn main() {
 }
 
 fn read_initial_board() -> Board {
-    let width = 10;
-    let height = 10;
+    let width = 20;
+    let height = 20;
     let mut board = Board {
         cells: vec![CellState::Dead; width * height],
         width: width,
@@ -164,15 +164,12 @@ fn read_initial_board() -> Board {
     };
 
     /* Update the board here */
-    // for row in 0..board.height {
-    //     for col in 0..board.width {
-    //         board.set(col, row, rand::thread_rng().gen());
-    //     }
-    // }
+    for row in 0..board.height {
+        for col in 0..board.width {
+            board.set(col, row, rand::thread_rng().gen());
+        }
+    }
 
-    board.set(5, 2, CellState::Alive);
-    board.set(5, 3, CellState::Alive);
-    board.set(5, 4, CellState::Alive);
     board
 }
 
