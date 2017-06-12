@@ -46,7 +46,7 @@ impl Board {
 
     pub fn neighbours(&self, x: usize, y: usize) -> Neighbours {
         Neighbours {
-            board: &self,
+            board: self,
             ix: -1,
             iy: -1,
             x: x,
@@ -121,31 +121,35 @@ fn update(board: Board) -> Board {
             let cell_value = new_board.get(w, h);
             let neighbours: Vec<_> = board.neighbours(w, h).collect();
             assert_eq!(neighbours.len(), 8);
-            let alive_count = neighbours.iter().filter(|c| **c == CellState::Alive)
+            let alive_count = neighbours
+                .iter()
+                .filter(|c| **c == CellState::Alive)
                 .count();
 
             use CellState::*;
             let new_value = if cell_value == Alive {
-                if alive_count < 2 {
-                    Dead
-                } else if alive_count > 3 {
+                if alive_count < 2 || alive_count > 3 {
                     Dead
                 } else {
                     Alive
                 }
+            } else if alive_count == 3 {
+                Alive
             } else {
-                if alive_count == 3 { Alive } else { Dead }
+                Dead
             };
 
             new_board.set(w, h, new_value);
         }
     }
 
+    drop(board);
+
     new_board
 }
 
 fn read_board(_filename: &str) -> Board {
-    read_initial_board()
+    read_initial_board(20, 20)
 }
 
 fn main() {
@@ -153,31 +157,62 @@ fn main() {
         .author("Simon Walker")
         .version("1.0")
         .arg(Arg::with_name("niterations")
-             .short("N")
-             .long("niter")
-             .value_name("NITERATIONS")
-             .takes_value(true)
-             .help("Number of iterations to run"))
+                 .short("N")
+                 .long("niter")
+                 .value_name("NITERATIONS")
+                 .takes_value(true)
+                 .help("Number of iterations to run"))
         .arg(Arg::with_name("output")
-             .short("o")
-             .long("output")
-             .value_name("OUTPUT")
-             .takes_value(true)
-             .required(true)
-             .help("Output text file"))
+                 .short("o")
+                 .long("output")
+                 .value_name("OUTPUT")
+                 .takes_value(true)
+                 .required(true)
+                 .help("Output text file"))
         .arg(Arg::with_name("input")
-             .short("-i")
-             .long("input")
-             .value_name("INPUT")
-             .takes_value(true)
-             .help("Input board state"))
+                 .short("-i")
+                 .long("input")
+                 .value_name("INPUT")
+                 .takes_value(true)
+                 .help("Input board state"))
+        .arg(Arg::with_name("width")
+                 .short("w")
+                 .long("width")
+                 .value_name("WIDTH")
+                 .takes_value(true)
+                 .help("Width of board")
+                 .conflicts_with("input"))
+        .arg(Arg::with_name("height")
+                 .short("H")
+                 .long("height")
+                 .value_name("HEIGHT")
+                 .takes_value(true)
+                 .help("Height of board")
+                 .conflicts_with("input"))
         .get_matches();
 
-    let niterations = matches.value_of("niterations").unwrap_or("100").parse().unwrap();
+    let niterations = matches
+        .value_of("niterations")
+        .unwrap_or("100")
+        .parse()
+        .unwrap();
     let output = matches.value_of("output").unwrap();
+
     let mut board = match matches.value_of("input") {
         Some(filename) => read_board(filename),
-        None => read_initial_board(),
+        None => {
+            let width = matches
+                .value_of("width")
+                .expect("board width argument required")
+                .parse()
+                .unwrap();
+            let height = matches
+                .value_of("height")
+                .expect("board height argument required")
+                .parse()
+                .unwrap();
+            read_initial_board(width, height)
+        }
     };
 
     let file = File::create(output).unwrap();
@@ -195,9 +230,7 @@ fn main() {
     }
 }
 
-fn read_initial_board() -> Board {
-    let width = 20;
-    let height = 20;
+fn read_initial_board(width: usize, height: usize) -> Board {
     let mut board = Board {
         cells: vec![CellState::Dead; width * height],
         width: width,
