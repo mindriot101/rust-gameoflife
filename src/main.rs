@@ -1,9 +1,11 @@
 extern crate rand;
+extern crate clap;
 
 use std::io::{BufWriter, Write};
 use std::fs::File;
 
 use rand::Rng;
+use clap::{Arg, App};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CellState {
@@ -142,17 +144,50 @@ fn update(board: Board) -> Board {
     new_board
 }
 
+fn read_board(_filename: &str) -> Board {
+    read_initial_board()
+}
+
 fn main() {
-    let mut board = read_initial_board();
-    let iterations = 100;
-    let file = File::create("gol.txt").unwrap();
+    let matches = App::new("GOL")
+        .author("Simon Walker")
+        .version("1.0")
+        .arg(Arg::with_name("niterations")
+             .short("N")
+             .long("niter")
+             .value_name("NITERATIONS")
+             .takes_value(true)
+             .help("Number of iterations to run"))
+        .arg(Arg::with_name("output")
+             .short("o")
+             .long("output")
+             .value_name("OUTPUT")
+             .takes_value(true)
+             .required(true)
+             .help("Output text file"))
+        .arg(Arg::with_name("input")
+             .short("-i")
+             .long("input")
+             .value_name("INPUT")
+             .takes_value(true)
+             .help("Input board state"))
+        .get_matches();
+
+    let niterations = matches.value_of("niterations").unwrap_or("100").parse().unwrap();
+    let output = matches.value_of("output").unwrap();
+    let mut board = match matches.value_of("input") {
+        Some(filename) => read_board(filename),
+        None => read_initial_board(),
+    };
+
+    let file = File::create(output).unwrap();
     let mut writer = BufWriter::new(file);
 
     // Write header
-    write!(&mut writer, "{} {}\n---\n", board.width, board.height);
+    write!(&mut writer, "{} {}\n---\n", board.width, board.height).unwrap();
 
 
-    for _ in 0..iterations {
+    for _ in 0..niterations {
 
         render(&board, &mut writer);
 
@@ -179,19 +214,6 @@ fn read_initial_board() -> Board {
     board
 }
 
-/*
-fn render<T: Write>(board: &Board, writer: &mut T) {
-    for row in 0..board.height {
-        for col in 0..board.width {
-            /* Invert the x and y axis for a more natural rendering */
-            let value = board.get(col, row);
-            let c = if value == CellState::Alive { 'A' } else { '.' };
-            write!(writer, "{}", c).unwrap();
-        }
-        write!(writer, "\n").unwrap();
-    }
-}
-*/
 fn render<T: Write>(board: &Board, writer: &mut T) {
     for row in 0..board.height {
         for col in 0..board.width {
