@@ -14,3 +14,12 @@ and visualise with `plot_gol.py`:
 python ./plot_gol.py gol.txt -o gol.mp4
 open gol.mp4
 ```
+
+## Required python packages
+
+* matplotlib
+* tqdm
+
+## Visualised example
+
+<img src="https://github.com/mindriot101/rust-gameoflife/blob/include-example/gol.gif">
