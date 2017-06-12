@@ -219,7 +219,7 @@ fn main() {
     let mut writer = BufWriter::new(file);
 
     // Write header
-    write!(&mut writer, "{} {}\n---\n", board.width, board.height).unwrap();
+    write!(&mut writer, "{} {}\n{}\n---\n", board.width, board.height, niterations).unwrap();
 
 
     for _ in 0..niterations {
